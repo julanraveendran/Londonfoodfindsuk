@@ -67,4 +67,3 @@ The application processes restaurant data from the Excel file and:
 - If an image fails to load, a placeholder is shown
 - Pagination shows 12 restaurants per page
 - All links are fully functional and responsive
-
