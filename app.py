@@ -82,31 +82,50 @@ def load_and_process_data():
     """Load and process restaurant data from Excel or JSON"""
     global restaurants_data, cuisines_dict, neighbourhoods_dict
     
+    # Get the base directory (works for both local and Vercel)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    json_path = os.path.join(base_dir, 'processed_data.json')
+    excel_path = os.path.join(base_dir, 'OS-20251124200014m1e_restaurant.xlsx')
+    
     # Try to load from JSON first (for Vercel/production)
-    if os.path.exists('processed_data.json'):
+    if os.path.exists(json_path):
         print("Loading from processed_data.json...")
-        import json
-        with open('processed_data.json', 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            restaurants_data = data.get('restaurants', [])
-            cuisines_dict = data.get('cuisines', {})
-            neighbourhoods_dict = data.get('neighbourhoods', {})
-        print(f"Loaded {len(restaurants_data)} restaurants from JSON")
-        print(f"Found {len(cuisines_dict)} unique cuisines")
-        print(f"Found {len(neighbourhoods_dict)} neighbourhoods")
-        return
+        try:
+            import json
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                restaurants_data = data.get('restaurants', [])
+                cuisines_dict = data.get('cuisines', {})
+                neighbourhoods_dict = data.get('neighbourhoods', {})
+            print(f"Loaded {len(restaurants_data)} restaurants from JSON")
+            print(f"Found {len(cuisines_dict)} unique cuisines")
+            print(f"Found {len(neighbourhoods_dict)} neighbourhoods")
+            return
+        except Exception as e:
+            print(f"Error loading JSON: {e}")
+            # Continue to try Excel file
     
     # Fallback to Excel file (for local development)
-    if not os.path.exists('OS-20251124200014m1e_restaurant.xlsx'):
+    if os.path.exists(excel_path):
+        print("Loading Excel file...")
+    elif not os.path.exists(json_path):
         print("ERROR: Neither processed_data.json nor OS-20251124200014m1e_restaurant.xlsx found!")
+        print(f"Looked in: {base_dir}")
         print("Please run: python convert_to_json.py to create processed_data.json")
         restaurants_data = []
         cuisines_dict = {}
         neighbourhoods_dict = {}
         return
+    else:
+        # JSON exists but failed to load, Excel doesn't exist
+        print("ERROR: Failed to load processed_data.json and Excel file not found!")
+        restaurants_data = []
+        cuisines_dict = {}
+        neighbourhoods_dict = {}
+        return
     
-    print("Loading Excel file...")
-    df = pd.read_excel('OS-20251124200014m1e_restaurant.xlsx')
+    # Load Excel file
+    df = pd.read_excel(excel_path)
     
     print(f"Loaded {len(df)} restaurants")
     
