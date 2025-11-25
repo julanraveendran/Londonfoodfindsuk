@@ -79,8 +79,31 @@ def extract_cuisines(subtypes_str):
     return result
 
 def load_and_process_data():
-    """Load and process restaurant data from Excel"""
+    """Load and process restaurant data from Excel or JSON"""
     global restaurants_data, cuisines_dict, neighbourhoods_dict
+    
+    # Try to load from JSON first (for Vercel/production)
+    if os.path.exists('processed_data.json'):
+        print("Loading from processed_data.json...")
+        import json
+        with open('processed_data.json', 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            restaurants_data = data.get('restaurants', [])
+            cuisines_dict = data.get('cuisines', {})
+            neighbourhoods_dict = data.get('neighbourhoods', {})
+        print(f"Loaded {len(restaurants_data)} restaurants from JSON")
+        print(f"Found {len(cuisines_dict)} unique cuisines")
+        print(f"Found {len(neighbourhoods_dict)} neighbourhoods")
+        return
+    
+    # Fallback to Excel file (for local development)
+    if not os.path.exists('OS-20251124200014m1e_restaurant.xlsx'):
+        print("ERROR: Neither processed_data.json nor OS-20251124200014m1e_restaurant.xlsx found!")
+        print("Please run: python convert_to_json.py to create processed_data.json")
+        restaurants_data = []
+        cuisines_dict = {}
+        neighbourhoods_dict = {}
+        return
     
     print("Loading Excel file...")
     df = pd.read_excel('OS-20251124200014m1e_restaurant.xlsx')

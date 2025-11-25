@@ -46,6 +46,10 @@ Thumbs.db
 *.xlsx
 *.xls
 
+# Processed JSON file (will be generated)
+# Uncomment the line below if you want to exclude processed_data.json from git
+# processed_data.json
+
 # Logs
 *.log
 
