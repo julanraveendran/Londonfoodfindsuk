@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Top {{ total_restaurants }} Best Restaurants in London | Restaurants Near Me{% endblock %}
+{% block description %}Discover the top {{ total_restaurants }} best restaurants in London. Browse by cuisine, neighbourhood, and find the best dining experiences near you.{% endblock %}
+
+{% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "London Food Finds",
+  "description": "Discover the top {{ total_restaurants }} best restaurants in London",
+  "url": "https://domain.co.uk"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Top {{ total_restaurants }} Best Restaurants in London",
+  "description": "Browse top-rated restaurants in London",
+  "url": "https://domain.co.uk"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">Top {{ total_restaurants }} Best Restaurants in London</h1>
+        <p class="hero-subtitle">Discover top-rated dining options in London</p>
+    </div>
+</section>
+
+<!-- Browse by Cuisine -->
+<section class="cuisine-filters-section">
+    <div class="container">
+        <h2 class="section-title">Browse by Cuisine in London</h2>
+        <div class="cuisine-pills">
+            {% for slug, data in cuisines %}
+            <a href="/cuisine/{{ slug }}" class="cuisine-pill">{{ data.name }}</a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- All Restaurants -->
+<section class="restaurants-section">
+    <div class="container">
+        <h2 class="section-title">All Restaurants in London</h2>
+        <div class="restaurant-grid">
+            {% for restaurant in restaurants %}
+            <div class="restaurant-card">
+                {% if restaurant.julans_pick %}
+                <span class="pick-badge">Julan's Pick</span>
+                {% endif %}
+                {% if restaurant.photo %}
+                <div class="restaurant-image">
+                    <img src="{{ restaurant.photo }}" alt="{{ restaurant.name }}" loading="lazy">
+                </div>
+                {% else %}
+                <div class="restaurant-image placeholder">
+                    <span>No Image</span>
+                </div>
+                {% endif %}
+                <div class="restaurant-content">
+                    <h3 class="restaurant-name">{{ restaurant.name }}</h3>
+                    <div class="restaurant-rating">
+                        <span class="stars">
+                            {% for i in range(5) %}
+                                {% if i < restaurant.rating|round|int %}
+                                <span class="star filled">★</span>
+                                {% else %}
+                                <span class="star">☆</span>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                        <span class="rating-value">{{ "%.1f"|format(restaurant.rating) }}</span>
+                        <span class="review-count">({{ restaurant.reviews }} reviews)</span>
+                    </div>
+                    <p class="restaurant-address">{{ restaurant.address }}</p>
+                    {% if restaurant.phone %}
+                    <p class="restaurant-phone">{{ restaurant.phone }}</p>
+                    {% endif %}
+                    {% if restaurant.website %}
+                    <a href="{{ restaurant.website }}" target="_blank" rel="noopener" class="visit-website-btn">Visit Website</a>
+                    {% endif %}
+                    {% if loop.index <= 3 %}
+                    <script type="application/ld+json">
+                    {
+                      "@context": "https://schema.org",
+                      "@type": "Restaurant",
+                      "name": "{{ restaurant.name|e }}",
+                      {% if restaurant.address %}"address": "{{ restaurant.address|e }}",{% endif %}
+                      {% if restaurant.phone %}"telephone": "{{ restaurant.phone|e }}",{% endif %}
+                      {% if restaurant.website %}"url": "{{ restaurant.website|e }}",{% endif %}
+                      {% if restaurant.rating %}"aggregateRating": {
+                        "@type": "AggregateRating",
+                        "ratingValue": "{{ restaurant.rating }}",
+                        "reviewCount": "{{ restaurant.reviews }}"
+                      },{% endif %}
+                      "addressLocality": "{{ restaurant.city|e }}",
+                      "addressCountry": "GB"
+                    }
+                    </script>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <div class="pagination">
+            {% if current_page > 1 %}
+            <a href="/page/{{ current_page - 1 }}" class="pagination-link prev">← Previous</a>
+            {% endif %}
+            
+            {% for page_num in range(1, total_pages + 1) %}
+                {% if page_num == 1 %}
+                    {% if current_page == 1 %}
+                    <span class="pagination-link active">1</span>
+                    {% else %}
+                    <a href="/" class="pagination-link">1</a>
+                    {% endif %}
+                {% else %}
+                    {% if page_num == current_page %}
+                    <span class="pagination-link active">{{ page_num }}</span>
+                    {% elif page_num <= 3 or page_num > total_pages - 3 or (page_num >= current_page - 1 and page_num <= current_page + 1) %}
+                    <a href="/page/{{ page_num }}" class="pagination-link">{{ page_num }}</a>
+                    {% elif page_num == 4 and current_page > 5 %}
+                    <span class="pagination-ellipsis">...</span>
+                    {% elif page_num == total_pages - 3 and current_page < total_pages - 4 %}
+                    <span class="pagination-ellipsis">...</span>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            
+            {% if current_page < total_pages %}
+            <a href="/page/{{ current_page + 1 }}" class="pagination-link next">Next →</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Nearby Neighbourhoods -->
+<section class="neighbourhoods-section">
+    <div class="container">
+        <h2 class="section-title">Nearby Neighbourhoods</h2>
+        <div class="neighbourhood-grid">
+            {% for slug, data in neighbourhoods %}
+            <a href="/neighbourhood/{{ slug }}" class="neighbourhood-box">
+                <h3>{{ data.name }}</h3>
+                <p class="neighbourhood-count">{{ data.count }} restaurants</p>
+                <span class="neighbourhood-arrow">→</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="about-section">
+    <div class="container">
+        <h2 class="section-title">About London Food Finds</h2>
+        <p>London Food Finds is your comprehensive guide to discovering the best restaurants across Greater London. We've curated thousands of top-rated dining establishments, helping you find the perfect spot for any occasion. Whether you're looking for a specific cuisine or exploring a new neighbourhood, we make it easy to discover exceptional dining experiences.</p>
+    </div>
+</section>
+{% endblock %}
+

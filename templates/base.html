@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Top Best Restaurants in London{% endblock %}</title>
+    <meta name="description" content="{% block description %}Discover top-rated restaurants in London. Browse by cuisine, neighbourhood, and find the best dining experiences near you.{% endblock %}">
+    
+    <!-- SEO Meta Tags -->
+    <meta property="og:title" content="{% block og_title %}Top Best Restaurants in London{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Discover top-rated restaurants in London{% endblock %}">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="canonical" href="https://domain.co.uk{% block canonical %}{{ request.path }}{% endblock %}">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header class="main-header">
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-wrapper">
+                    <a href="/" class="logo">London Food Finds</a>
+                    <ul class="nav-menu">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/neighbourhoods">Neighbourhoods</a></li>
+                        <li><a href="/cuisines">Cuisines</a></li>
+                        <li><a href="/about">About</a></li>
+                    </ul>
+                    <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <p>London Food Finds is your guide to discovering the best restaurants in London. We help you find top-rated dining experiences across the city.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Popular Neighbourhoods</h3>
+                    <ul class="footer-links">
+                        {% for slug, data in footer_neighbourhoods %}
+                        <li><a href="/neighbourhood/{{ slug }}">{{ data.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Popular Cuisines</h3>
+                    <ul class="footer-links">
+                        {% for slug, data in footer_cuisines %}
+                        <li><a href="/cuisine/{{ slug }}">{{ data.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Follow Us</h3>
+                    <ul class="footer-links">
+                        <li><a href="https://www.tiktok.com/@londonfoodfindsuk/" target="_blank" rel="noopener">TikTok</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 London Food Finds. All rights reserved. | <a href="/sitemap.xml" class="footer-sitemap-link">Sitemap</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
+

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}All Cuisines in London | Restaurant Directory{% endblock %}
+{% block description %}Browse all cuisine types available in London restaurants. Find your favorite cuisine and discover top-rated dining experiences.{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">All Cuisines in London</h1>
+        <p class="hero-subtitle">Browse all cuisine types and discover restaurants</p>
+    </div>
+</section>
+
+<!-- Cuisines Grid -->
+<section class="cuisines-section">
+    <div class="container">
+        <div class="cuisine-grid">
+            {% for slug, data in cuisines %}
+            <a href="/cuisine/{{ slug }}" class="cuisine-box">
+                <h3>{{ data.name }}</h3>
+                <p class="cuisine-count">{{ data.count }} restaurants</p>
+                <span class="cuisine-arrow">→</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+
