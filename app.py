@@ -215,8 +215,20 @@ def load_and_process_data():
     print(f"Found {len(cuisines_dict)} unique cuisines")
     print(f"Found {len(neighbourhoods_dict)} neighbourhoods")
 
-# Load data on startup
-load_and_process_data()
+# Load data on startup (with error handling for Vercel)
+try:
+    load_and_process_data()
+except Exception as e:
+    print(f"Error loading data: {e}")
+    import traceback
+    traceback.print_exc()
+    # Set empty defaults to prevent app from crashing
+    if restaurants_data is None:
+        restaurants_data = []
+    if cuisines_dict is None:
+        cuisines_dict = {}
+    if neighbourhoods_dict is None:
+        neighbourhoods_dict = {}
 
 @app.context_processor
 def inject_globals():

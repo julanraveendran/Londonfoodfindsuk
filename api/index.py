@@ -1,6 +1,6 @@
 """
 Vercel serverless function entry point for Flask app
-This handles the WSGI conversion for Vercel's serverless environment
+Proper WSGI handler for Vercel's Python runtime
 """
 import sys
 import os
@@ -10,21 +10,35 @@ parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-# Change to project root directory (Vercel runs from api/ directory)
+# Change working directory to project root (critical for file paths)
 os.chdir(parent_dir)
 
-# Import the Flask app from app.py
+# Import Flask app - wrap in try/except to show errors
 try:
     from app import app
-except Exception as e:
-    # If import fails, create a simple error handler
-    from flask import Flask
-    app = Flask(__name__)
     
-    @app.route('/')
-    def error():
-        return f"Error loading app: {str(e)}", 500
-
-# Vercel Python runtime expects the app directly
-# The @vercel/python builder handles WSGI conversion automatically
-handler = app
+    # Vercel Python runtime expects a handler function or WSGI app
+    # The @vercel/python builder can handle Flask apps directly
+    # Export as 'handler' for Vercel
+    handler = app
+    
+except Exception as e:
+    # Create error handler that shows the actual error
+    from flask import Flask
+    import traceback
+    
+    error_app = Flask(__name__)
+    
+    @error_app.route('/', defaults={'path': ''})
+    @error_app.route('/<path:path>')
+    def error_handler(path):
+        error_details = traceback.format_exc()
+        return f"""
+        <h1>Application Error</h1>
+        <p><strong>Error:</strong> {str(e)}</p>
+        <h3>Traceback:</h3>
+        <pre>{error_details}</pre>
+        <p>Check Vercel function logs for more details.</p>
+        """, 500
+    
+    handler = error_app
