@@ -13,6 +13,18 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 
 Write-Host "Git found! Proceeding with setup..." -ForegroundColor Green
 
+# Configure git user if not set
+$gitUser = git config user.name
+$gitEmail = git config user.email
+if (-not $gitUser -or -not $gitEmail) {
+    Write-Host "Configuring Git user settings..." -ForegroundColor Cyan
+    git config user.name "julanraveendran"
+    git config user.email "julanraveendran@users.noreply.github.com"
+    Write-Host "Git user configured. You can change this later with:" -ForegroundColor Yellow
+    Write-Host "  git config user.name 'Your Name'" -ForegroundColor Yellow
+    Write-Host "  git config user.email 'your.email@example.com'" -ForegroundColor Yellow
+}
+
 # Initialize git repository if not already initialized
 if (-not (Test-Path .git)) {
     Write-Host "Initializing git repository..." -ForegroundColor Cyan
@@ -29,9 +41,16 @@ git add .
 $status = git status --porcelain
 if (-not $status) {
     Write-Host "No changes to commit." -ForegroundColor Yellow
+    # Check if we have any commits
+    $hasCommits = git rev-parse --verify HEAD 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: No commits exist and no changes to commit." -ForegroundColor Red
+        Write-Host "Please stage files first with: git add ." -ForegroundColor Yellow
+        exit 1
+    }
 } else {
     Write-Host "Committing changes..." -ForegroundColor Cyan
-    git commit -m "Initial commit: London Food Finds UK directory website with sitemap"
+    git commit -m "Update: London Food Finds UK directory website with sitemap"
 }
 
 # Add remote if not already added
