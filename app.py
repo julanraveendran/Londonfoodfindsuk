@@ -200,9 +200,6 @@ def get_nearby_neighbourhoods(exclude_neighbourhood: str = "London", limit: int 
 @app.route('/')
 def index():
     """Homepage with all London restaurants."""
-    if df is None or df.empty:
-        return "Error: Data not loaded. Please check server logs.", 500
-    
     page = request.args.get('page', 1, type=int)
     
     # Filter to London only
@@ -246,9 +243,6 @@ def index():
 @app.route('/neighbourhood/<name>')
 def neighbourhood(name):
     """Filter restaurants by neighbourhood."""
-    if df is None or df.empty:
-        return "Error: Data not loaded. Please check server logs.", 500
-    
     page = request.args.get('page', 1, type=int)
     
     # Find matching neighbourhood (try slug match or name match)
@@ -302,9 +296,6 @@ def neighbourhood(name):
 @app.route('/cuisine/<name>')
 def cuisine(name):
     """Filter restaurants by cuisine."""
-    if df is None or df.empty:
-        return "Error: Data not loaded. Please check server logs.", 500
-    
     page = request.args.get('page', 1, type=int)
     
     # Find matching cuisine (try slug match or name match)
@@ -393,101 +384,12 @@ def about():
     return render_template('about.html')
 
 
-# Load data when module is imported (for Vercel serverless functions)
-# This ensures data is available when the app is imported in api/index.py
-def initialize_data():
-    """Initialize data from Excel or JSON file."""
-    global df, cuisine_counts, neighbourhood_counts
-    
-    if os.path.exists(DATA_PATH):
-        try:
-            print(f"Loading data from {DATA_PATH}...")
-            load_data()
-            print("Data loaded successfully from Excel")
-            return True
-        except Exception as e:
-            print(f"Error loading data from Excel: {e}")
-            import traceback
-            traceback.print_exc()
-    
-    if os.path.exists("processed_data.json"):
-        try:
-            import json
-            print("Loading data from processed_data.json...")
-            with open("processed_data.json", "r", encoding="utf-8") as f:
-                data = json.load(f)
-            
-            # Convert JSON back to DataFrame structure
-            restaurants = data.get("restaurants", [])
-            if not restaurants:
-                raise ValueError("processed_data.json has no restaurants")
-            
-            df = pd.DataFrame(restaurants)
-            
-            # Ensure required columns exist with defaults
-            if "city_clean" not in df.columns:
-                df["city_clean"] = df.get("city", "London")
-            if "categories" not in df.columns:
-                df["categories"] = df.get("subtypes", "").apply(lambda x: [x] if pd.notna(x) and x else [])
-            
-            # Recalculate necessary fields if missing
-            if "rating" not in df.columns or df["rating"].isna().all():
-                df["rating"] = pd.to_numeric(df.get("rating", 0), errors="coerce").fillna(0)
-            else:
-                df["rating"] = pd.to_numeric(df["rating"], errors="coerce").fillna(0)
-            
-            if "reviews" not in df.columns:
-                df["reviews"] = 0
-            df["reviews"] = pd.to_numeric(df["reviews"], errors="coerce").fillna(0).astype(int)
-            
-            if "score" not in df.columns:
-                df["score"] = df["rating"] + (df["reviews"] / 1000)
-            else:
-                df["score"] = pd.to_numeric(df["score"], errors="coerce").fillna(df["rating"] + (df["reviews"] / 1000))
-            
-            # Set julans_pick flag
-            if "julans_pick" not in df.columns:
-                df["julans_pick"] = (df["rating"] >= 4.5) & (df["reviews"] >= 500)
-            
-            # Force "Le Garrick" to be a Julan's Pick
-            le_garrick_mask = df["name"].str.strip().str.casefold() == "le garrick"
-            if le_garrick_mask.any():
-                df.loc[le_garrick_mask, "julans_pick"] = True
-            
-            # Load counts from JSON or recalculate
-            cuisine_counts = data.get("cuisines", {})
-            neighbourhood_counts = data.get("neighbourhoods", {})
-            
-            if not cuisine_counts or not neighbourhood_counts:
-                # Recalculate if not in JSON
-                from collections import Counter
-                exploded = df.explode("categories")
-                london_exploded = exploded[exploded["city_clean"] == "London"]
-                cuisine_counts = london_exploded[london_exploded["categories"].notna()].groupby("categories").size().to_dict()
-                neighbourhood_counts = df.groupby("city_clean").size().to_dict()
-            
-            print(f"Loaded {len(df)} restaurants from JSON")
-            return True
-        except Exception as e:
-            print(f"Error loading from JSON: {e}")
-            import traceback
-            traceback.print_exc()
-    
-    print(f"Warning: Neither {DATA_PATH} nor processed_data.json found")
-    print("Data loading failed. Please ensure data file exists.")
-    df = pd.DataFrame()
-    cuisine_counts = {}
-    neighbourhood_counts = {}
-    return False
-
-# Initialize data on import
-initialize_data()
-
-
 if __name__ == '__main__':
-    # Only run Flask dev server if running locally
-    if df is not None and not df.empty:
+    # Load data on startup
+    if os.path.exists(DATA_PATH):
+        load_data()
         app.run(debug=True, port=5000)
     else:
-        print("Cannot start server: No data loaded")
+        print(f"Error: Could not find {DATA_PATH}")
+        print("Please ensure the Excel file is in the same directory as app.py")
 
