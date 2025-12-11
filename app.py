@@ -375,18 +375,90 @@ def about():
     return render_template('about.html')
 
 
+def initialize_data():
+    """Initialize data from Excel or JSON file."""
+    global df, cuisine_counts, neighbourhood_counts
+
+    if os.path.exists(DATA_PATH):
+        try:
+            print(f"Loading data from {DATA_PATH}...")
+            load_data()
+            print("Data loaded successfully from Excel")
+            return True
+        except Exception as e:
+            print(f"Error loading data from Excel: {e}")
+            import traceback
+            traceback.print_exc()
+
+    if os.path.exists("processed_data.json"):
+        try:
+            import json
+            print("Loading data from processed_data.json...")
+            with open("processed_data.json", "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            # Convert JSON back to DataFrame structure
+            restaurants = data.get("restaurants", [])
+            if not restaurants:
+                raise ValueError("processed_data.json has no restaurants")
+
+            df = pd.DataFrame(restaurants)
+
+            # Ensure required columns exist with defaults
+            if "city_clean" not in df.columns:
+                df["city_clean"] = df.get("city", "London")
+            if "categories" not in df.columns:
+                df["categories"] = df.get("subtypes", "").apply(lambda x: [x] if pd.notna(x) and x else [])
+
+            # Recalculate necessary fields if missing
+            if "rating" not in df.columns or df["rating"].isna().all():
+                df["rating"] = pd.to_numeric(df.get("rating", 0), errors="coerce").fillna(0)
+            else:
+                df["rating"] = pd.to_numeric(df["rating"], errors="coerce").fillna(0)
+
+            if "reviews" not in df.columns:
+                df["reviews"] = 0
+            df["reviews"] = pd.to_numeric(df["reviews"], errors="coerce").fillna(0).astype(int)
+
+            if "score" not in df.columns:
+                df["score"] = df["rating"] + (df["reviews"] / 1000)
+            else:
+                df["score"] = pd.to_numeric(df["score"], errors="coerce").fillna(df["rating"] + (df["reviews"] / 1000))
+
+            # Set julans_pick flag
+            if "julans_pick" not in df.columns:
+                df["julans_pick"] = (df["rating"] >= 4.5) & (df["reviews"] >= 500)
+
+            # Load counts from JSON or recalculate
+            cuisine_counts = data.get("cuisines", {})
+            neighbourhood_counts = data.get("neighbourhoods", {})
+
+            if not cuisine_counts or not neighbourhood_counts:
+                # Recalculate if not in JSON
+                from collections import Counter
+                exploded = df.explode("categories")
+                london_exploded = exploded[exploded["city_clean"] == "London"]
+                cuisine_counts = london_exploded[london_exploded["categories"].notna()].groupby("categories").size().to_dict()
+                neighbourhood_counts = df.groupby("city_clean").size().to_dict()
+
+            print(f"Loaded {len(df)} restaurants from JSON")
+            return True
+        except Exception as e:
+            print(f"Error loading from JSON: {e}")
+            import traceback
+            traceback.print_exc()
+
+    print(f"Warning: Neither {DATA_PATH} nor processed_data.json found")
+    print("Data loading failed. Please ensure data file exists.")
+    df = pd.DataFrame()
+
+
 # Load data when module is imported (works for both direct run and Vercel)
-if os.path.exists(DATA_PATH):
-    try:
-        load_data()
-        print("Data loaded successfully")
-    except Exception as e:
-        print(f"Error loading data: {e}")
-        import traceback
-        traceback.print_exc()
-else:
-    print(f"Warning: Could not find {DATA_PATH}")
-    print("Please ensure the Excel file is in the same directory as app.py")
+initialize_data()
+
+# Ensure df is not None before routes execute
+if df is None or df.empty:
+    print("WARNING: Data failed to load. App will show errors.")
 
 if __name__ == '__main__':
     # Only run the Flask dev server when running directly
