@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LondonFoodFinds{% endblock %}</title>
+    <meta name="description" content="{% block description %}Discover the best restaurants in London{% endblock %}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <a href="{{ url_for('index') }}">LondonFoodFinds</a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('neighbourhoods') }}">Neighbourhoods</a></li>
+                <li><a href="{{ url_for('cuisines') }}">Cuisines</a></li>
+                <li><a href="{{ url_for('about') }}">About</a></li>
+            </ul>
+        </nav>
+        <button class="mobile-menu-toggle" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-columns">
+            <div>
+                <strong>About LondonFoodFinds</strong>
+                <p>Your guide to the best restaurants in London. Find top-rated places to eat near you.</p>
+                <p><a href="https://www.tiktok.com/@londonfoodfindsuk/" target="_blank" rel="noopener">TikTok</a></p>
+            </div>
+            <div>
+                <p>Popular Neighbourhoods</p>
+                <ul>
+                    <li><a href="{{ url_for('neighbourhood', name='london') }}">London</a></li>
+                    <li><a href="{{ url_for('neighbourhood', name='ilford') }}">Ilford</a></li>
+                    <li><a href="{{ url_for('neighbourhood', name='hounslow') }}">Hounslow</a></li>
+                    <li><a href="{{ url_for('neighbourhood', name='kingston-upon-thames') }}">Kingston upon Thames</a></li>
+                    <li><a href="{{ url_for('neighbourhood', name='sutton') }}">Sutton</a></li>
+                </ul>
+            </div>
+            <div>
+                <p>Popular Cuisines</p>
+                <ul>
+                    <li><a href="{{ url_for('cuisine', name='indian-restaurant') }}">Indian</a></li>
+                    <li><a href="{{ url_for('cuisine', name='italian-restaurant') }}">Italian</a></li>
+                    <li><a href="{{ url_for('cuisine', name='japanese-restaurant') }}">Japanese</a></li>
+                    <li><a href="{{ url_for('cuisine', name='vegan-restaurant') }}">Vegan</a></li>
+                    <li><a href="{{ url_for('cuisine', name='turkish-restaurant') }}">Turkish</a></li>
+                </ul>
+            </div>
+        </div>
+        <p class="footer-muted">© 2025 LondonFoodFinds. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            const nav = document.querySelector('header nav');
+            
+            if (toggle && nav) {
+                toggle.addEventListener('click', function() {
+                    nav.classList.toggle('active');
+                    toggle.classList.toggle('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+

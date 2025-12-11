@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - LondonFoodFinds{% endblock %}
+
+{% block description %}Discover the best restaurants in London{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>{{ title }}</h1>
+    <p>{% if filter_type == 'cuisine' %}Browse all {{ filter_name.lower() }} restaurants in London.{% elif filter_type == 'neighbourhood' %}Discover top-rated dining options in {{ filter_name }}.{% else %}Discover top-rated dining options in London.{% endif %}</p>
+</div>
+
+<div class="container">
+    <div class="main-content">
+        {% if filter_type != 'cuisine' %}
+        <section class="cuisine-pills-section">
+            <div class="section-head">
+                <h2>Browse by Cuisine{% if filter_type == 'neighbourhood' %} in {{ filter_name }}{% else %} in London{% endif %}</h2>
+            </div>
+            <div class="pill-grid">
+                {% for cuisine_name, count in top_cuisines %}
+                <a href="{{ url_for('cuisine', name=cuisine_name | slugify) }}" class="pill">
+                    <strong>{{ cuisine_name }}</strong>
+                    <span>{{ count }} restaurants</span>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+        {% else %}
+        <section class="cuisine-pills-section">
+            <div class="section-head">
+                <h2>Browse by Cuisine in London</h2>
+            </div>
+            <div class="pill-grid">
+                {% for cuisine_name, count in top_cuisines %}
+                <a href="{{ url_for('cuisine', name=cuisine_name | slugify) }}" class="pill{% if cuisine_name == filter_name %} active{% endif %}">
+                    <strong>{{ cuisine_name }}</strong>
+                    <span>{{ count }} restaurants</span>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if filter_type == 'neighbourhood' and filter_categories %}
+        <section class="cuisine-pills-section">
+            <div class="section-head">
+                <h2>Browse by Cuisine in {{ filter_name }}</h2>
+            </div>
+            <div class="pill-grid">
+                {% for cat, count in filter_categories.items() | sort(attribute='1', reverse=True) %}
+                <a href="{{ url_for('neighbourhood', name=filter_name | replace(' ', '-') | lower) }}/{{ cat | replace(' ', '-') | lower | replace('restaurant', 'restaurant') }}" class="pill">
+                    <strong>{{ cat }}</strong>
+                    <span>{{ count }} restaurants</span>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="restaurants-section">
+            <div class="section-head">
+                <h2>{% if filter_type == 'cuisine' %}All {{ filter_name }} Restaurants in London{% elif filter_type == 'neighbourhood' %}All Restaurants in {{ filter_name }}{% else %}All Restaurants in London{% endif %}</h2>
+                <span class="restaurant-count">{{ total }} restaurants found.</span>
+            </div>
+            <div class="restaurant-grid">
+                {% for restaurant in restaurants %}
+                <article class="feature-card">
+                    <div class="card-media" style="background-image: url('{{ restaurant.image }}')">
+                        {% if restaurant.julans_pick %}
+                        <span class="badge badge-top">JULAN'S PICK</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h3>{{ restaurant.name }}</h3>
+                        <p class="meta">
+                            {% set stars = restaurant.rating | int %}
+                            {% for i in range(stars) %}★{% endfor %}
+                            ({{ "{:,}".format(restaurant.reviews) }})
+                        </p>
+                        <p class="meta">{{ restaurant.address }}</p>
+                        <p class="meta">{{ restaurant.phone }}</p>
+                        <a href="{{ restaurant.website }}" class="btn" target="_blank" rel="noopener">Visit Website</a>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+
+            {% if total_pages > 1 %}
+            <div class="pagination">
+                {% if page > 1 %}
+                <a href="{{ request.path }}?page={{ page - 1 }}" class="page-nav">« Previous</a>
+                {% else %}
+                <span class="page-nav disabled">« Previous</span>
+                {% endif %}
+
+                {% for p in range(1, total_pages + 1) %}
+                    {% if total_pages <= 7 or p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+                        {% if p == page %}
+                        <span class="page-num active">{{ p }}</span>
+                        {% else %}
+                        <a href="{{ request.path }}?page={{ p }}" class="page-num">{{ p }}</a>
+                        {% endif %}
+                    {% elif p == page - 3 or p == page + 3 %}
+                        <span class="page-ellipsis">...</span>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page < total_pages %}
+                <a href="{{ request.path }}?page={{ page + 1 }}" class="page-nav">Next »</a>
+                {% else %}
+                <span class="page-nav disabled">Next »</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <aside class="sidebar">
+        <div class="sidebar-section">
+            <h3>Nearby Neighbourhoods</h3>
+            <ul class="neighbourhood-list">
+                {% for neighbourhood in nearby_neighbourhoods %}
+                <li>
+                    <a href="{{ url_for('neighbourhood', name=neighbourhood.slug) }}">
+                        {{ neighbourhood.name }}
+                        <span class="count">({{ neighbourhood.count }})</span>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </aside>
+</div>
+{% endblock %}
+

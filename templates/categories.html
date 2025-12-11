@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - LondonFoodFinds{% endblock %}
+
+{% block description %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>{{ title }}</h1>
+    <p>Browse restaurants{% if item_type == 'cuisine' %} by cuisine type{% else %} by neighbourhood{% endif %}.</p>
+</div>
+
+<div class="container">
+    <div class="main-content full-width">
+        <section class="categories-section">
+            <div class="category-grid">
+                {% for item in items %}
+                <a href="{{ url_for(item_type if item_type == 'neighbourhood' else 'cuisine', name=item.slug) }}" class="category-card">
+                    <strong>{{ item.name }}</strong>
+                    <span>{{ item.count }} {% if item.count == 1 %}restaurant{% else %}restaurants{% endif %}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
