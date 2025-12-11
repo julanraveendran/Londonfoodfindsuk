@@ -137,11 +137,6 @@ def load_data():
     
     # Add Julan's Pick flag
     df["julans_pick"] = (df["rating"] >= 4.5) & (df["reviews"] >= 500)
-
-    # Force "Le Garrick" to be a Julan's Pick
-    le_garrick_mask = df["name"].str.strip().str.casefold() == "le garrick"
-    if le_garrick_mask.any():
-        df.loc[le_garrick_mask, "julans_pick"] = True
     
     # Calculate cuisine counts (from London only)
     london_df = df[df["city_clean"] == "London"].copy()
@@ -200,18 +195,14 @@ def get_nearby_neighbourhoods(exclude_neighbourhood: str = "London", limit: int 
 @app.route('/')
 def index():
     """Homepage with all London restaurants."""
+    if df is None or df.empty:
+        return "Error: Data not loaded. Please check server logs.", 500
+    
     page = request.args.get('page', 1, type=int)
     
     # Filter to London only
     london_df = df[df["city_clean"] == "London"].copy()
     london_df = london_df.sort_values(["score", "reviews"], ascending=False)
-
-    # Ensure "Le Garrick" is always surfaced at the top of the homepage
-    le_garrick_mask = london_df["name"].str.strip().str.casefold() == "le garrick"
-    if le_garrick_mask.any():
-        le_garrick = london_df[le_garrick_mask]
-        london_df = pd.concat([le_garrick, london_df[~le_garrick_mask]])
-        london_df = london_df.drop_duplicates(subset="name", keep="first")
     
     total = len(london_df)
     total_pages = math.ceil(total / RESTAURANTS_PER_PAGE)
