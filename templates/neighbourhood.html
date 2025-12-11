@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Best Restaurants in {{ neighbourhood_name }}, London{% endblock %}
+{% block description %}Browse all restaurants in {{ neighbourhood_name }}, London. Find top-rated dining experiences with ratings and reviews.{% endblock %}
+
+{% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Best Restaurants in {{ neighbourhood_name }}, London",
+  "description": "Browse all restaurants in {{ neighbourhood_name }}"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">Best Restaurants in {{ neighbourhood_name }}, London</h1>
+        <p class="hero-subtitle">Browse all cuisines and restaurants in {{ neighbourhood_name }}</p>
+    </div>
+</section>
+
+<!-- Browse by Cuisine -->
+{% if cuisines %}
+<section class="cuisine-filters-section">
+    <div class="container">
+        <h2 class="section-title">Browse by Cuisine in {{ neighbourhood_name }}</h2>
+        <div class="cuisine-pills">
+            {% for slug, data in cuisines %}
+            <a href="/neighbourhood/{{ neighbourhood_slug }}/cuisine/{{ slug }}" class="cuisine-pill {% if slug == active_cuisine_slug %}active{% endif %}">{{ data.name }}</a>
+            {% endfor %}
+            {% if active_cuisine_slug %}
+            <a href="/neighbourhood/{{ neighbourhood_slug }}" class="cuisine-pill">All Cuisines</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- All Restaurants -->
+<section class="restaurants-section">
+    <div class="container">
+        <h2 class="section-title">
+            {% if active_cuisine_name %}
+            All {{ active_cuisine_name }} Restaurants in {{ neighbourhood_name }}
+            {% else %}
+            All Restaurants in {{ neighbourhood_name }}
+            {% endif %}
+        </h2>
+        <div class="restaurant-grid">
+            {% for restaurant in restaurants %}
+            <div class="restaurant-card">
+                {% if restaurant.julans_pick %}
+                <span class="pick-badge">Julan's Pick</span>
+                {% endif %}
+                {% if restaurant.photo %}
+                <div class="restaurant-image">
+                    <img src="{{ restaurant.photo }}" alt="{{ restaurant.name }}" loading="lazy">
+                </div>
+                {% else %}
+                <div class="restaurant-image placeholder">
+                    <span>No Image</span>
+                </div>
+                {% endif %}
+                <div class="restaurant-content">
+                    <h3 class="restaurant-name">{{ restaurant.name }}</h3>
+                    <div class="restaurant-rating">
+                        <span class="stars">
+                            {% for i in range(5) %}
+                                {% if i < restaurant.rating|round|int %}
+                                <span class="star filled">★</span>
+                                {% else %}
+                                <span class="star">☆</span>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                        <span class="rating-value">{{ "%.1f"|format(restaurant.rating) }}</span>
+                        <span class="review-count">({{ restaurant.reviews }} reviews)</span>
+                    </div>
+                    <p class="restaurant-address">{{ restaurant.address }}</p>
+                    {% if restaurant.phone %}
+                    <p class="restaurant-phone">{{ restaurant.phone }}</p>
+                    {% endif %}
+                    {% if restaurant.website %}
+                    <a href="{{ restaurant.website }}" target="_blank" rel="noopener" class="visit-website-btn">Visit Website</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <div class="pagination">
+            {% set base_url = "/neighbourhood/" + neighbourhood_slug %}
+            {% if active_cuisine_slug %}
+                {% set base_url = base_url + "/cuisine/" + active_cuisine_slug %}
+            {% endif %}
+            
+            {% if current_page > 1 %}
+            <a href="{{ base_url }}/page/{{ current_page - 1 }}" class="pagination-link prev">← Previous</a>
+            {% endif %}
+            
+            {% for page_num in range(1, total_pages + 1) %}
+                {% if page_num == 1 %}
+                    {% if current_page == 1 %}
+                    <span class="pagination-link active">1</span>
+                    {% else %}
+                    <a href="{{ base_url }}" class="pagination-link">1</a>
+                    {% endif %}
+                {% else %}
+                    {% if page_num == current_page %}
+                    <span class="pagination-link active">{{ page_num }}</span>
+                    {% elif page_num <= 3 or page_num > total_pages - 3 or (page_num >= current_page - 1 and page_num <= current_page + 1) %}
+                    <a href="{{ base_url }}/page/{{ page_num }}" class="pagination-link">{{ page_num }}</a>
+                    {% elif page_num == 4 and current_page > 5 %}
+                    <span class="pagination-ellipsis">...</span>
+                    {% elif page_num == total_pages - 3 and current_page < total_pages - 4 %}
+                    <span class="pagination-ellipsis">...</span>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            
+            {% if current_page < total_pages %}
+            <a href="{{ base_url }}/page/{{ current_page + 1 }}" class="pagination-link next">Next →</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+

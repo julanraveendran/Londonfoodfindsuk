@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}All London Neighbourhoods | Restaurant Directory{% endblock %}
+{% block description %}Browse all neighbourhoods in London and discover restaurants in each area. Find the best dining experiences across Greater London.{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">All London Neighbourhoods</h1>
+        <p class="hero-subtitle">Discover restaurants across all neighbourhoods in London</p>
+    </div>
+</section>
+
+<!-- Neighbourhoods Grid -->
+<section class="neighbourhoods-section">
+    <div class="container">
+        <div class="neighbourhood-grid">
+            {% for slug, data in neighbourhoods %}
+            <a href="/neighbourhood/{{ slug }}" class="neighbourhood-box">
+                <h3>{{ data.name }}</h3>
+                <p class="neighbourhood-count">{{ data.count }} restaurants</p>
+                <span class="neighbourhood-arrow">→</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+
