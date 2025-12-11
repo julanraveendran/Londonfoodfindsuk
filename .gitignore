@@ -11,4 +11,5 @@ ENV/
 site/
 .DS_Store
 *.log
+processed_data.json
 
