@@ -375,12 +375,20 @@ def about():
     return render_template('about.html')
 
 
-if __name__ == '__main__':
-    # Load data on startup
-    if os.path.exists(DATA_PATH):
+# Load data when module is imported (works for both direct run and Vercel)
+if os.path.exists(DATA_PATH):
+    try:
         load_data()
-        app.run(debug=True, port=5000)
-    else:
-        print(f"Error: Could not find {DATA_PATH}")
-        print("Please ensure the Excel file is in the same directory as app.py")
+        print("Data loaded successfully")
+    except Exception as e:
+        print(f"Error loading data: {e}")
+        import traceback
+        traceback.print_exc()
+else:
+    print(f"Warning: Could not find {DATA_PATH}")
+    print("Please ensure the Excel file is in the same directory as app.py")
+
+if __name__ == '__main__':
+    # Only run the Flask dev server when running directly
+    app.run(debug=True, port=5000)
 
