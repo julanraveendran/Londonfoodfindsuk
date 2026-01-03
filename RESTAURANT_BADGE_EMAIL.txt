@@ -1,0 +1,42 @@
+Subject: Display Your Best Restaurant Award Badge on Your Website
+
+Dear [Restaurant Owner Name],
+
+Congratulations on being featured as one of London's Best Restaurants on London Food Finds UK!
+
+We'd love for you to display your award badge on your website. This helps showcase your recognition and provides a backlink to your listing on our site, which is great for SEO.
+
+HOW TO ADD THE BADGE:
+
+1. Copy the HTML code below
+2. Paste it into your website where you'd like it to appear (typically in your footer, sidebar, or awards section)
+3. The badge will automatically link back to London Food Finds UK
+
+--- COPY THE CODE BELOW THIS LINE ---
+
+<a href="https://londonfoodfindsuk.co.uk/" target="_blank" rel="nofollow noopener" title="London Food Finds UK - Best Restaurant Award">
+  <img src="https://londonfoodfindsuk.co.uk/static/images/best-restaurant-award.png" 
+       alt="Best Restaurant Award - London Food Finds UK" 
+       style="max-width: 200px; height: auto; display: block;">
+</a>
+
+--- END OF CODE ---
+
+CUSTOMIZING THE SIZE:
+
+If you need to adjust the badge size, simply change "200px" in the code to your desired width:
+- Smaller: "150px" or "175px"
+- Larger: "250px" or "300px"
+
+PREVIEW:
+
+You can see what the badge looks like by visiting: https://londonfoodfindsuk.co.uk/
+
+If you have any questions or need assistance adding the badge to your website, please don't hesitate to reach out.
+
+Thank you for being part of London Food Finds UK!
+
+Best regards,
+London Food Finds UK Team
+https://londonfoodfindsuk.co.uk/
+
